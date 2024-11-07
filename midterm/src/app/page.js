@@ -1,101 +1,97 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  // state management
+  const [pictureContent, setPictureContents] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // fetch data function
+  async function fetchPictures() {
+    setLoading(true);
+    setError(null);
+    try {
+      const API_URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&count=5";
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error("Failed to fetch pictures");
+      const data = await response.json();
+      setPictureContents(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // clear action
+  function clearPictures() {
+    setPictureContents(null);
+  }
+
+  // header component with fetch and clear buttons
+  const Header = () => {
+    return (
+      <header className="text-center my-6">
+        <h1 className="text-3xl font-bold text-white mb-4">MDIA-3126 Midterm API Fetching</h1>
+        <p className="text-m font-regular text-white mb-4">Click on the button below to fetch data from NASA! This will fetch stellar photos and information to be displayed in the following content below. 🌌</p>
+        <div className="flex justify-center space-x-4">
+          <button
+            disabled={loading}
+            className={`px-6 py-2 font-semibold rounded-lg shadow-md transition 
+                        ${
+                          loading
+                            ? "bg-pink-300 cursor-not-allowed text-gray-700"
+                            : "bg-pink-500 text-white hover:bg-pink-600"
+                        }`}
+            onClick={fetchPictures}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Fetch The Stars 💫
+          </button>
+          <button
+            className={`px-6 py-2 font-semibold rounded-lg shadow-md transition 
+                        ${
+                          loading || !pictureContent
+                            ? "bg-pink-300 cursor-not-allowed text-gray-700"
+                            : "bg-pink-500 text-white hover:bg-pink-600"
+                        }`}
+            onClick={clearPictures}
+            disabled={loading || !pictureContent}
           >
-            Read our docs
-          </a>
+            Clear Stars
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
-}
+      </header>
+    );
+  };
+
+    // component to display fetched data
+    const PictureDisplay = () => {
+      if (loading) return <section className="text-center text-pink-300 text-xl">Loading...</section>;
+      if (error) return <section className="text-center text-pink-500 text-xl">Error: {error}</section>;
+      if (!pictureContent) return <section className="text-center text-gray-500 text-xl">No content to be displayed for now!</section>;
+  
+      return (
+        <section className="grid gap-6 mt-6">
+          {pictureContent.map((picture, i) => (
+            <article key={i} className="bg-gray-800 rounded-lg shadow-lg p-4">
+              <img
+                src={picture.url}
+                alt={picture.title}
+                className="w-full h-auto object-contain rounded-md mb-4"
+              />
+              <h2 className="text-2xl font-semibold text-pink-400 mb-2">{picture.title}</h2>
+              <p className="text-gray-300">{picture.explanation}</p>
+            </article>
+          ))}
+        </section>
+      );
+    };
+  
+    return (
+      <div className="min-h-screen bg-black p-8">
+        <Header />
+        <PictureDisplay />
+      </div>
+    );
+  }
